@@ -2,21 +2,25 @@ DROP VIEW IF EXISTS tenant.v_esgquestion;
 analyze tenant.esgquestion;
 create or replace view tenant.v_esgquestion as
 select
-         h.pkid_ as v_esgquestionid_ -- create pkid_ and rename it as viewname||id_
-        ,h.pkid_::varchar as pkid_ -- pull pkid_ for transformation if this is latestversion view
+         --h.pkid_ as v_esgquestionid_ -- create pkid_ and rename it as viewname||id_
+         h.id_ as v_esgquestionid_ -- create pkid_ and rename it as viewname||id_
+		,h.pkid_::varchar as pkid_ -- pull pkid_ for transformation if this is latestversion view
         ,h.id_::varchar as esgquestionid_ -- pull the id_ from tenant table and name it as tenant.tablename||id_ 
         -- add several jsonb columns here and alphabetize them in lowercase order
-		,(h.jsondoc_ ->>'Choice')::boolean AS choice
+		--,(h.jsondoc_ ->>'Choice')::boolean AS choice
 		,(h.jsondoc_ ->>'Comments') AS comments
 		,(h.jsondoc_ ->>'EsgMasterId') AS esgmasterid
 		,(h.jsondoc_ ->>'Factor') AS factor		
 		,(h.jsondoc_ ->>'Pillar')::boolean AS pillar
+		,(h.jsondoc_->>'PreviousReferenceYear') as previousreferenceyear
+		,(h.jsondoc_->>'PreviousValue') as previousvalue
 		,(h.jsondoc_ ->>'QuestionDescr') AS questiondescr
 		,(h.jsondoc_ ->>'QuestionId') AS questionid
-		,(h.jsondoc_ ->>'QuestionnaireVersion') AS questionnaireversion
+		--,(h.jsondoc_ ->>'QuestionnaireVersion') AS questionnaireversion
+		,(h.jsondoc_->>'ReferenceYear') as referenceyear
 		,(h.jsondoc_ ->>'SubFactor') AS subfactor
 		,(h.jsondoc_ ->>'Value') AS value
-		,(h.jsondoc_ ->>'Year') AS year		
+		--,(h.jsondoc_ ->>'Year') AS year		
         -- add all base table context attributes you want for your view here
      	,h.wfid_::varchar
 		,h.taskid_::varchar
