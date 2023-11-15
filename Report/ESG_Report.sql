@@ -60,7 +60,7 @@ from (
 		,entity.creditcommittee::char(5) as INV_PTY_RTG_APRV_AHR_ID
 		,assess.assessmentuser::char(50) as INV_PTY_RTG_ANL_NM
 		,assess.overridereason::char(5) as INV_PTY_RTG_OVRD_RSN_TP_ID
-		,approveduser::char(50) as INV_PTY_RTG_APRV_NM
+		,approvaluser::char(50) as INV_PTY_RTG_APRV_NM
 		,entity.businessportfolio::char(5) as INV_PTY_RTG_BSN_PRTF
 		,assess.overridedriver::char(5) as INV_PTY_RTG_OVRD_DRVR
 		,case when assess.overridegrade::char(5) is null then '01' --systemic 
@@ -74,14 +74,14 @@ from (
 		,assess.gzoneoutcome::char(5) as INV_PTY_RTG_GVRNC_ZON
 		,assess.totalesgscore::numeric(16,8) as INV_PTY_RTG_ESG_SCOR
 		,assess.esgzonesoutcome::char(5) as INV_PTY_RTG_ESG_ZON
-		,concat(assess.typequestionnaire,'\',nace_lookup.value_,'\',key_)::char(100) INV_PTY_RTG_TP_SCTR
+		,concat(assess.questionnairetype,'\',nace_lookup.value_,'\',key_)::char(100) INV_PTY_RTG_TP_SCTR
 		,assess.id_::char(50) as QUEST_ID
 		,question.questionnaireversion::char(50) as QUEST_VRSN
 		,entity.registrationnumber::char(50) as OBLG_RGSTRN_NUM
 		,entity.jurisdiction::char(5) as JRSCTN
-	from olapts.esgassessment assess
-		left join olapts.abfactentity entity on assess.entityid = entity.entityid and assess.entityversionid::int = entity.versionid_
-		left join olapts.esgquestion question on assess.pkid_=question.fkid_esgmaster and assess.versionid_=question.versionid_ and question.islatestversion_
+	from olapts.factesgassessment assess
+		left join olapts.factentity entity on assess.entityid::int = entity.entityid and assess.entityversionid::int = entity.versionid_
+		left join olapts.factesgquestion question on assess.pkid_=question.fkid_esgmaster and assess.versionid_=question.versionid_ and question.islatestversion_
 		left join olapts.nace_industry_lookup nace_lookup on entity.industrycode = nace_lookup.Key_ 
 	where assess.authorizationflag  --isapproved
 			and assess.islatestversion_ 
