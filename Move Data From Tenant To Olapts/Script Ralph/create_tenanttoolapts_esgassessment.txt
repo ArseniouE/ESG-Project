@@ -1,0 +1,354 @@
+----------------------------------------------EsgAssessment----------------------------------
+SET TIMEZONE = 'UTC';
+SET SESSION myvariables.popdate = NOW;
+--SET SESSION myvariables.popdate = '2023-06-27 0000:00.000000';
+
+DO $$
+DECLARE
+varprevsuccessdate TIMESTAMP ;
+BEGIN
+
+CREATE TABLE IF NOT EXISTS olapts.refreshhistory (
+tablename VARCHAR,
+asofdate TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() at time zone 'utc'),
+prevsuccessdate TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() at time zone 'utc')
+);
+
+END $$;
+
+
+DO $$
+DECLARE
+varprevsuccessdate TIMESTAMP ;
+
+BEGIN
+
+--drop table olapts.esgassessment
+IF EXISTS (select from olapts.refreshhistory where tablename = 'esgassessment') THEN
+raise notice '% - Step esgassessment - part a start', clock_timestamp();
+insert into olapts.esgassessment
+	select   
+		esgassessment.id_ AS id_,
+		esgassessment.pkid_::varchar as pkid_,
+		(esgassessment.jsondoc_ ->>'ApprovalDate') AS ApprovalDate,
+		(esgassessment.jsondoc_ ->>'ApprovedUser') AS ApprovedUser,
+		(esgassessment.jsondoc_ ->>'AssessmentDate') AS AssessmentDate,
+		(esgassessment.jsondoc_ ->>'AssessmentUser') AS AssessmentUser,		
+		(esgassessment.jsondoc_ ->>'AuthorizationFlag')::boolean AS AuthorizationFlag,
+		(esgassessment.jsondoc_ ->>'CreditCommitteeDate') AS CreditCommitteeDate,
+		(esgassessment.jsondoc_ ->>'DoesAnnualTurnoverExceed50')::boolean AS DoesAnnualTurnoverExceed50,
+		(esgassessment.jsondoc_ ->>'DoesCreditLimitExceed55')::boolean AS DoesCreditLimitExceed55,
+		(esgassessment.jsondoc_ ->>'DoesExposureExceed50')::boolean AS DoesExposureExceed50,
+		(esgassessment.jsondoc_ ->>'EbiodiversityScore') AS EbiodiversityScore,
+		(esgassessment.jsondoc_ ->>'EclimateGoalsTargetsScore') AS EclimateGoalsTargetsScore,
+		(esgassessment.jsondoc_ ->>'EemissionsScore') AS EemissionsScore,
+		(esgassessment.jsondoc_ ->>'EenergyScore') AS EenergyScore,
+		(esgassessment.jsondoc_ ->>'EenvironmentalComplianceScore') AS EenvironmentalComplianceScore,
+		(esgassessment.jsondoc_ ->>'EevaluationApproachScore') AS EevaluationApproachScore,
+		(esgassessment.jsondoc_ ->>'EmanagementApproachScore') AS EmanagementApproachScore,
+		(esgassessment.jsondoc_ ->>'EmanagementSystemsScore') AS EmanagementSystemsScore,
+		(esgassessment.jsondoc_ ->>'EmonitoringMechanismsScore') AS EmonitoringMechanismsScore,
+		(esgassessment.jsondoc_ ->> 'EntityId') AS EntityId,
+		(esgassessment.jsondoc_ ->> 'EntityVersionId') AS EntityVersionId,
+		(esgassessment.jsondoc_ ->> 'EperformanceAssessmentScore') AS EperformanceAssessmentScore,
+		(esgassessment.jsondoc_ ->> 'EphysicalRiskAssessmentScore') AS EphysicalRiskAssessmentScore,
+		(esgassessment.jsondoc_ ->> 'EpoliciesScore') AS EpoliciesScore,
+		(esgassessment.jsondoc_ ->> 'EsgGrade') AS EsgGrade,
+		(esgassessment.jsondoc_ ->> 'EsgZonesOutcome') AS EsgZonesOutcome,
+		(esgassessment.jsondoc_ ->> 'EsubGrade') AS EsubGrade,
+		(esgassessment.jsondoc_ ->> 'EsubScore') AS EsubScore,
+		(esgassessment.jsondoc_ ->> 'EwasteScore') AS EwasteScore,
+		(esgassessment.jsondoc_ ->> 'EwaterEffluentsScore') AS EwaterEffluentsScore,
+		(esgassessment.jsondoc_ ->> 'EzoneOutcome') AS EzoneOutcome,
+		(esgassessment.jsondoc_ ->> 'GbusinessEthicsScore') AS GbusinessEthicsScore,
+		(esgassessment.jsondoc_ ->> 'GcollectiveKnowledgeScore') AS GcollectiveKnowledgeScore,
+		(esgassessment.jsondoc_ ->> 'GcompositionDiversityScore') AS GcompositionDiversityScore,
+		(esgassessment.jsondoc_ ->> 'GperformanceEvaluationScore') AS GperformanceEvaluationScore,
+		(esgassessment.jsondoc_ ->> 'GregulatoryComplianceScore') AS GregulatoryComplianceScore,
+		(esgassessment.jsondoc_ ->> 'GremunerationScore') AS GremunerationScore,
+		(esgassessment.jsondoc_ ->> 'GrolesResponsibilitiesScore') AS GrolesResponsibilitiesScore,
+		(esgassessment.jsondoc_ ->> 'GroupId') AS GroupId,
+		(esgassessment.jsondoc_ ->> 'GroupNaceCode') AS GroupNaceCode,
+		(esgassessment.jsondoc_ ->> 'GroupName') AS GroupName,
+		(esgassessment.jsondoc_ ->> 'GstakeholderEngagementScore') AS GstakeholderEngagementScore,		
+		(esgassessment.jsondoc_ ->> 'GstrategyRiskManagementScore') AS GstrategyRiskManagementScore,
+		(esgassessment.jsondoc_ ->> 'GsubGrade') AS GsubGrade,		
+		(esgassessment.jsondoc_ ->> 'GsubScore') AS GsubScore,
+		(esgassessment.jsondoc_ ->> 'GtransparencyScore') AS GtransparencyScore,
+		(esgassessment.jsondoc_ ->> 'GzoneOutcome') AS GzoneOutcome,
+		(esgassessment.jsondoc_ ->> 'HaveFullBlownCriteriaBeenMet')::boolean AS HaveFullBlownCriteriaBeenMet,
+		(esgassessment.jsondoc_ ->> 'IsCompanyListedInStockExchange')::boolean  AS IsCompanyListedInStockExchange,	
+		(esgassessment.jsondoc_ ->> 'NextReviewDate') AS NextReviewDate,
+		(esgassessment.jsondoc_ ->> 'OverrideAuthority') AS OverrideAuthority,
+		(l1.jsondoc_ ->> 'Value') AS OverrideAuthorityVal,
+		(esgassessment.jsondoc_ ->> 'OverrideDriver') AS OverrideDriver,--ref_Dato esgOverrideDriver auto den einai ref_dato?? fainetai keno	
+		(esgassessment.jsondoc_ ->> 'OverrideGrade') AS OverrideGrade,
+		(esgassessment.jsondoc_ ->> 'OverrideProvider') AS OverrideProvider,
+		(esgassessment.jsondoc_ ->> 'OverrideReason') AS OverrideReason,--ref_Dato esgOverrideReason auto den einai ref_dato?? fainetai keno	
+		--(esgassessment.jsondoc_ ->> 'Id') AS QuestionnaireId, ------auto einai to QuestionnaireId
+		(esgassessment.jsondoc_ ->> 'ScomplianceScore') AS ScomplianceScore,
+		(esgassessment.jsondoc_ ->> 'ScustomerPrivacyScore') AS ScustomerPrivacyScore,
+		(esgassessment.jsondoc_ ->> 'SevaluationApproachScore') AS SevaluationApproachScore,
+		(esgassessment.jsondoc_ ->> 'SgoalsTargetsScore') AS SgoalsTargetsScore,
+		(esgassessment.jsondoc_ ->> 'ShumanRightsScore') AS ShumanRightsScore,
+		(esgassessment.jsondoc_ ->> 'SlaborManagementRelationsScore') AS SlaborManagementRelationsScore,
+		(esgassessment.jsondoc_ ->> 'SlocalCommunitiesScore') AS SlocalCommunitiesScore,
+		(esgassessment.jsondoc_ ->> 'SmanagementApproachScore') AS SmanagementApproachScore,
+		(esgassessment.jsondoc_ ->> 'SmanagementSystemsScore') AS SmanagementSystemsScore,
+		(esgassessment.jsondoc_ ->> 'SmonitoringMechanismsScore') AS SmonitoringMechanismsScore,
+		(esgassessment.jsondoc_ ->> 'SoccupationalHealthSafetScore') AS SoccupationalHealthSafetScore,
+		(esgassessment.jsondoc_ ->> 'SperformanceAssessmentScore') AS SperformanceAssessmentScore,
+		(esgassessment.jsondoc_ ->> 'SpoliciesScore') AS SpoliciesScore,
+		(esgassessment.jsondoc_ ->> 'SsubGrade') AS SsubGrade,
+		(esgassessment.jsondoc_ ->> 'SsubScore') AS SsubScore,
+		(esgassessment.jsondoc_ ->> 'StrainingEducationScore') AS StrainingEducationScore,
+		(esgassessment.jsondoc_ ->> 'SzoneOutcome') AS SzoneOutcome,
+		(esgassessment.jsondoc_ ->> 'TotalEsgScore') AS TotalEsgScore,
+		(esgassessment.jsondoc_ ->> 'TypeQuestionnaire') AS TypeQuestionnaire,	
+		(esgassessment.jsondoc_ ->>'ExpirationDate') as ExpirationDate,
+		esgassessment.wfid_::varchar,
+		esgassessment.taskid_::varchar,
+		esgassessment.versionid_::int4,
+		esgassessment.isdeleted_::boolean,
+		esgassessment.islatestversion_::boolean,
+		esgassessment.baseversionid_::int4,
+		esgassessment.contextuserid_::varchar,
+		esgassessment.isvisible_::boolean,
+		esgassessment.isvalid_::boolean,
+		esgassessment.snapshotid_::int4,
+		esgassessment.t_::varchar,
+		esgassessment.createdby_::varchar,
+		esgassessment.createddate_::timestamp,
+		esgassessment.updatedby_::varchar,
+		esgassessment.updateddate_::timestamp,
+		esgassessment.fkid_entity,		
+		CASE WHEN esgassessment.updateddate_ > esgassessment.createddate_ THEN esgassessment.updatedby_ ELSE esgassessment.createdby_ END AS sourcepopulatedby_,
+		GREATEST(esgassessment.createddate_, esgassessment.updateddate_) AS sourcepopulateddate_
+		,current_setting('myvariables.popdate')::timestamp as populateddate_
+	 FROM madata.esgassessment
+		left join madata.custom_lookup l1 on l1.t_ = 'OverrideAuthority' and l1.jsondoc_->>'Key'  = esgassessment.jsondoc_ ->> 'OverrideAuthority'
+	WHERE
+		GREATEST(esgassessment.updateddate_, esgassessment.createddate_) > (select COALESCE(max(asofdate), to_timestamp(0)) from olapts.refreshhistory where tablename = 'esgassessment')
+		AND GREATEST(esgassessment.updateddate_, esgassessment.createddate_)::timestamp <= current_setting('myvariables.popdate')::timestamp
+		AND esgassessment.t_ = 'EsgAssessment'
+	;
+raise notice '% - Step esgassessment - part a end', clock_timestamp();
+--------------------------------------------
+ELSE
+raise notice '% Step esgassessment - part b start', clock_timestamp();
+	DROP TABLE IF EXISTS olapts.esgassessment;
+	CREATE TABLE olapts.esgassessment AS
+	select   
+		esgassessment.id_ AS id_,
+		esgassessment.pkid_::varchar as pkid_,
+		(esgassessment.jsondoc_ ->>'ApprovalDate') AS ApprovalDate,
+		(esgassessment.jsondoc_ ->>'ApprovedUser') AS ApprovedUser,
+		(esgassessment.jsondoc_ ->>'AssessmentDate') AS AssessmentDate,
+		(esgassessment.jsondoc_ ->>'AssessmentUser') AS AssessmentUser,		
+		(esgassessment.jsondoc_ ->>'AuthorizationFlag')::boolean AS AuthorizationFlag,
+		(esgassessment.jsondoc_ ->>'CreditCommitteeDate') AS CreditCommitteeDate,
+		(esgassessment.jsondoc_ ->>'DoesAnnualTurnoverExceed50')::boolean AS DoesAnnualTurnoverExceed50,
+		(esgassessment.jsondoc_ ->>'DoesCreditLimitExceed55')::boolean AS DoesCreditLimitExceed55,
+		(esgassessment.jsondoc_ ->>'DoesExposureExceed50')::boolean AS DoesExposureExceed50,
+		(esgassessment.jsondoc_ ->>'EbiodiversityScore') AS EbiodiversityScore,
+		(esgassessment.jsondoc_ ->>'EclimateGoalsTargetsScore') AS EclimateGoalsTargetsScore,
+		(esgassessment.jsondoc_ ->>'EemissionsScore') AS EemissionsScore,
+		(esgassessment.jsondoc_ ->>'EenergyScore') AS EenergyScore,
+		(esgassessment.jsondoc_ ->>'EenvironmentalComplianceScore') AS EenvironmentalComplianceScore,
+		(esgassessment.jsondoc_ ->>'EevaluationApproachScore') AS EevaluationApproachScore,
+		(esgassessment.jsondoc_ ->>'EmanagementApproachScore') AS EmanagementApproachScore,
+		(esgassessment.jsondoc_ ->>'EmanagementSystemsScore') AS EmanagementSystemsScore,
+		(esgassessment.jsondoc_ ->>'EmonitoringMechanismsScore') AS EmonitoringMechanismsScore,
+		(esgassessment.jsondoc_ ->> 'EntityId') AS EntityId,
+		(esgassessment.jsondoc_ ->> 'EntityVersionId') AS EntityVersionId,
+		(esgassessment.jsondoc_ ->> 'EperformanceAssessmentScore') AS EperformanceAssessmentScore,
+		(esgassessment.jsondoc_ ->> 'EphysicalRiskAssessmentScore') AS EphysicalRiskAssessmentScore,
+		(esgassessment.jsondoc_ ->> 'EpoliciesScore') AS EpoliciesScore,
+		(esgassessment.jsondoc_ ->> 'EsgGrade') AS EsgGrade,
+		(esgassessment.jsondoc_ ->> 'EsgZonesOutcome') AS EsgZonesOutcome,
+		(esgassessment.jsondoc_ ->> 'EsubGrade') AS EsubGrade,
+		(esgassessment.jsondoc_ ->> 'EsubScore') AS EsubScore,
+		(esgassessment.jsondoc_ ->> 'EwasteScore') AS EwasteScore,
+		(esgassessment.jsondoc_ ->> 'EwaterEffluentsScore') AS EwaterEffluentsScore,
+		(esgassessment.jsondoc_ ->> 'EzoneOutcome') AS EzoneOutcome,
+		(esgassessment.jsondoc_ ->> 'GbusinessEthicsScore') AS GbusinessEthicsScore,
+		(esgassessment.jsondoc_ ->> 'GcollectiveKnowledgeScore') AS GcollectiveKnowledgeScore,
+		(esgassessment.jsondoc_ ->> 'GcompositionDiversityScore') AS GcompositionDiversityScore,
+		(esgassessment.jsondoc_ ->> 'GperformanceEvaluationScore') AS GperformanceEvaluationScore,
+		(esgassessment.jsondoc_ ->> 'GregulatoryComplianceScore') AS GregulatoryComplianceScore,
+		(esgassessment.jsondoc_ ->> 'GremunerationScore') AS GremunerationScore,
+		(esgassessment.jsondoc_ ->> 'GrolesResponsibilitiesScore') AS GrolesResponsibilitiesScore,
+		(esgassessment.jsondoc_ ->> 'GroupId') AS GroupId,
+		(esgassessment.jsondoc_ ->> 'GroupNaceCode') AS GroupNaceCode,
+		(esgassessment.jsondoc_ ->> 'GroupName') AS GroupName,
+		(esgassessment.jsondoc_ ->> 'GstakeholderEngagementScore') AS GstakeholderEngagementScore,		
+		(esgassessment.jsondoc_ ->> 'GstrategyRiskManagementScore') AS GstrategyRiskManagementScore,
+		(esgassessment.jsondoc_ ->> 'GsubGrade') AS GsubGrade,		
+		(esgassessment.jsondoc_ ->> 'GsubScore') AS GsubScore,
+		(esgassessment.jsondoc_ ->> 'GtransparencyScore') AS GtransparencyScore,
+		(esgassessment.jsondoc_ ->> 'GzoneOutcome') AS GzoneOutcome,
+		(esgassessment.jsondoc_ ->> 'HaveFullBlownCriteriaBeenMet')::boolean AS HaveFullBlownCriteriaBeenMet,
+		(esgassessment.jsondoc_ ->> 'IsCompanyListedInStockExchange')::boolean  AS IsCompanyListedInStockExchange,	
+		(esgassessment.jsondoc_ ->> 'NextReviewDate') AS NextReviewDate,
+		(esgassessment.jsondoc_ ->> 'OverrideAuthority') AS OverrideAuthority,
+		(l1.jsondoc_ ->> 'Value') AS OverrideAuthorityVal,
+		(esgassessment.jsondoc_ ->> 'OverrideDriver') AS OverrideDriver,--ref_Dato esgOverrideDriver auto den einai ref_dato?? fainetai keno	
+		(esgassessment.jsondoc_ ->> 'OverrideGrade') AS OverrideGrade,
+		(esgassessment.jsondoc_ ->> 'OverrideProvider') AS OverrideProvider,
+		(esgassessment.jsondoc_ ->> 'OverrideReason') AS OverrideReason,--ref_Dato esgOverrideReason auto den einai ref_dato?? fainetai keno	
+		--(esgassessment.jsondoc_ ->> 'Id') AS QuestionnaireId, ------auto einai to QuestionnaireId
+		(esgassessment.jsondoc_ ->> 'ScomplianceScore') AS ScomplianceScore,
+		(esgassessment.jsondoc_ ->> 'ScustomerPrivacyScore') AS ScustomerPrivacyScore,
+		(esgassessment.jsondoc_ ->> 'SevaluationApproachScore') AS SevaluationApproachScore,
+		(esgassessment.jsondoc_ ->> 'SgoalsTargetsScore') AS SgoalsTargetsScore,
+		(esgassessment.jsondoc_ ->> 'ShumanRightsScore') AS ShumanRightsScore,
+		(esgassessment.jsondoc_ ->> 'SlaborManagementRelationsScore') AS SlaborManagementRelationsScore,
+		(esgassessment.jsondoc_ ->> 'SlocalCommunitiesScore') AS SlocalCommunitiesScore,
+		(esgassessment.jsondoc_ ->> 'SmanagementApproachScore') AS SmanagementApproachScore,
+		(esgassessment.jsondoc_ ->> 'SmanagementSystemsScore') AS SmanagementSystemsScore,
+		(esgassessment.jsondoc_ ->> 'SmonitoringMechanismsScore') AS SmonitoringMechanismsScore,
+		(esgassessment.jsondoc_ ->> 'SoccupationalHealthSafetScore') AS SoccupationalHealthSafetScore,
+		(esgassessment.jsondoc_ ->> 'SperformanceAssessmentScore') AS SperformanceAssessmentScore,
+		(esgassessment.jsondoc_ ->> 'SpoliciesScore') AS SpoliciesScore,
+		(esgassessment.jsondoc_ ->> 'SsubGrade') AS SsubGrade,
+		(esgassessment.jsondoc_ ->> 'SsubScore') AS SsubScore,
+		(esgassessment.jsondoc_ ->> 'StrainingEducationScore') AS StrainingEducationScore,
+		(esgassessment.jsondoc_ ->> 'SzoneOutcome') AS SzoneOutcome,
+		(esgassessment.jsondoc_ ->> 'TotalEsgScore') AS TotalEsgScore,
+		(esgassessment.jsondoc_ ->> 'TypeQuestionnaire') AS TypeQuestionnaire,	
+		(esgassessment.jsondoc_ ->>'ExpirationDate') as ExpirationDate,
+		esgassessment.wfid_::varchar,
+		esgassessment.taskid_::varchar,
+		esgassessment.versionid_::int4,
+		esgassessment.isdeleted_::boolean,
+		esgassessment.islatestversion_::boolean,
+		esgassessment.baseversionid_::int4,
+		esgassessment.contextuserid_::varchar,
+		esgassessment.isvisible_::boolean,
+		esgassessment.isvalid_::boolean,
+		esgassessment.snapshotid_::int4,
+		esgassessment.t_::varchar,
+		esgassessment.createdby_::varchar,
+		esgassessment.createddate_::timestamp,
+		esgassessment.updatedby_::varchar,
+		esgassessment.updateddate_::timestamp,
+		esgassessment.fkid_entity,		
+		CASE WHEN esgassessment.updateddate_ > esgassessment.createddate_ THEN esgassessment.updatedby_ ELSE esgassessment.createdby_ END AS sourcepopulatedby_,
+		GREATEST(esgassessment.createddate_, esgassessment.updateddate_) AS sourcepopulateddate_
+		,current_setting('myvariables.popdate')::timestamp as populateddate_
+	FROM madata.esgassessment
+		left join madata.custom_lookup l1 on l1.t_ = 'OverrideAuthority' and l1.jsondoc_->>'Key'  = esgassessment.jsondoc_ ->> 'OverrideAuthority'
+	WHERE
+		GREATEST(esgassessment.updateddate_, esgassessment.createddate_) > (select COALESCE(max(asofdate), to_timestamp(0)) from olapts.refreshhistory where tablename = 'esgassessment')
+		AND GREATEST(esgassessment.updateddate_, esgassessment.createddate_)::timestamp <= current_setting('myvariables.popdate')::timestamp
+		AND esgassessment.t_ = 'EsgAssessment'
+	;
+raise notice '% - Step esgassessment - part b end', clock_timestamp();
+
+--EsgAssessment--
+raise notice '% - Step esgassessment_idx - part a start', clock_timestamp(); 
+DROP INDEX if exists olapts.esgassessment_idx;
+DROP INDEX if exists olapts.esgassessment_idx2;
+CREATE INDEX IF NOT EXISTS esgassessment_idx ON olapts.esgassessment (id_);
+CREATE INDEX IF NOT EXISTS esgassessment_idx2 ON olapts.esgassessment (pkid_,versionid_);
+REINDEX TABLE olapts.esgassessment;
+ANALYZE olapts.esgassessment ;	
+
+raise notice '% - Step esgassessment_idx - part a end', clock_timestamp(); 
+END IF;
+------------------------------------------------------------------------
+raise notice '% step esgassessment - part c start', clock_timestamp();
+DROP TABLE IF EXISTS olapts.esgassessmentflag;
+CREATE TABLE  olapts.esgassessmentflag AS
+
+select
+id_,
+pkid_,
+wfid_ wfid_,
+taskid_ taskid_, 
+versionid_ versionid_,
+isdeleted_ isdeleted_,
+islatestversion_ islatestversion_,
+baseversionid_ baseversionid_,
+contextuserid_ contextuserid_,
+isvisible_ isvisible_,
+isvalid_ isvalid_,
+snapshotid_ snapshotid_,
+t_ t_,
+createdby_ createdby_,
+createddate_ createddate_,
+updatedby_ updatedby_,
+updateddate_ updateddate_,
+(case when updateddate_>createddate_ then updatedby_ else createdby_ end) as sourcepopulatedby_,
+GREATEST(updateddate_, createddate_) as sourcepopulateddate_
+,current_setting('myvariables.popdate')::timestamp as populateddate_
+FROM madata.esgassessment
+where 
+GREATEST(esgassessment.updateddate_, esgassessment.createddate_)::timestamp <=current_setting('myvariables.popdate')::timestamp
+and esgassessment.t_ = 'EsgAssessment'
+;
+
+raise notice '% - Step esgassessmentflag_idx - part a start', clock_timestamp(); 
+DROP INDEX if exists olapts.esgassessmentflag_idx;
+DROP INDEX if exists olapts.esgassessmentflag_idx2;
+CREATE INDEX IF NOT EXISTS esgassessmentflag_idx ON olapts.esgassessmentflag (id_);
+CREATE INDEX IF NOT EXISTS esgassessmentflag_idx2 ON olapts.esgassessmentflag (pkid_,versionid_);
+REINDEX TABLE olapts.esgassessmentflag;
+ANALYZE olapts.esgassessmentflag ;
+
+
+raise notice '% - Step esgassessmentflag_idx - part a end', clock_timestamp(); 
+
+select COALESCE(max(asofdate),to_timestamp(0)) into varprevsuccessdate from olapts.refreshhistory where tablename = 'esgassessment';
+delete from olapts.refreshhistory where tablename = 'esgassessment';
+insert into olapts.refreshhistory(tablename,asofdate,prevsuccessdate) select 'esgassessment' tablename,current_setting('myvariables.popdate')::timestamp as  asofdate,varprevsuccessdate;
+
+select COALESCE(max(asofdate),to_timestamp(0)) into varprevsuccessdate from olapts.refreshhistory where tablename = 'esgassessmentflag';
+delete from olapts.refreshhistory where tablename = 'esgassessmentflag';
+insert into olapts.refreshhistory(tablename,asofdate,prevsuccessdate) select 'esgassessmentflag' tablename,current_setting('myvariables.popdate')::timestamp as  asofdate,varprevsuccessdate;
+
+raise notice '% - Step esgassessment - part c end', clock_timestamp();
+
+END $$;
+
+
+--Check tables 
+--select createddate_,* from olapts.esgassessment order by createddate_ desc
+--select * from olapts.esgassessmentflag
+--select * from olapts.refreshhistory where tablename = 'esgassessment'
+--select createddate_,updateddate_,* from madata.esgassessment where id_<>'94429aaa-83b1-46cb-8afe-970a6f81dbe4|1'
+--except 
+--select id_ from olapts.esgassessment
+
+--2023-11-03 11:20:32.873974+00
+-------------------REF Data--------------------------
+
+DO $$
+DECLARE
+varprevsuccessdate TIMESTAMP ;
+BEGIN
+
+--OverrideAuthority
+raise notice '% - Step OverrideAuthority - part a start', clock_timestamp();
+DROP TABLE IF EXISTS olapts.overrideauthority;
+CREATE TABLE olapts.overrideauthority AS
+select l.jsondoc_->>'Key' overrideauthoritykey_,
+l.jsondoc_->>'Value' overrideauthorityvalue,
+isdeleted_,
+t_ t_ ,
+(case when updateddate_>createddate_ then updatedby_ else createdby_ end) as sourcepopulatedby_,
+GREATEST(updateddate_,createddate_) as sourcepopulateddate_
+,current_setting('myvariables.popdate')::timestamp as populateddate_ 
+from madata.v_lookup l
+where l.t_ = 'OverrideAuthority';
+
+select COALESCE(max(asofdate),to_timestamp(0)) into varprevsuccessdate from olapts.refreshhistory where tablename = 'esgassessment';
+delete from olapts.refreshhistory where tablename = 'esgassessment';
+insert into olapts.refreshhistory(tablename,asofdate,prevsuccessdate) select 'esgassessment' tablename, current_setting('myvariables.popdate')::timestamp as  asofdate,varprevsuccessdate;
+
+raise notice '% - Step esgassessment - part a end', clock_timestamp();
+
+END $$
+
+--Check table
+--select * from olapts.overrideauthority
