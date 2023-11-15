@@ -1,0 +1,189 @@
+----------------------------------------------EsgQuestion----------------------------------
+SET TIMEZONE = 'UTC';
+SET SESSION myvariables.popdate = NOW;
+--SET SESSION myvariables.popdate = '2023-06-27 0000:00.000000';
+
+DO $$
+DECLARE
+varprevsuccessdate TIMESTAMP ;
+BEGIN
+
+CREATE TABLE IF NOT EXISTS olapts.refreshhistory (
+tablename VARCHAR,
+asofdate TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() at time zone 'utc'),
+prevsuccessdate TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() at time zone 'utc')
+);
+
+END $$;
+
+
+DO $$
+DECLARE
+varprevsuccessdate TIMESTAMP ;
+
+BEGIN
+
+IF EXISTS (select from olapts.refreshhistory where tablename = 'esgquestion') THEN
+raise notice '% - Step esgquestion - part a start', clock_timestamp();
+insert into olapts.esgquestion
+	select   
+		esgquestion.id_ AS id_,
+		esgquestion.pkid_::varchar as pkid_,
+		(esgquestion.jsondoc_ ->>'Choice')::boolean AS Choice,
+		(esgquestion.jsondoc_ ->>'Comments') AS Comments,
+		(esgquestion.jsondoc_ ->>'EsgMasterId') AS EsgMasterId,
+		(esgquestion.jsondoc_ ->>'Factor') AS Factor,		
+		(esgquestion.jsondoc_ ->>'Pillar')::boolean AS Pillar,
+		(esgquestion.jsondoc_ ->>'QuestionDescr') AS QuestionDescr,
+		(esgquestion.jsondoc_ ->>'QuestionId') AS QuestionId,
+		(esgquestion.jsondoc_ ->>'QuestionnaireVersion') AS QuestionnaireVersion,
+		(esgquestion.jsondoc_ ->>'SubFactor') AS SubFactor,
+		(esgquestion.jsondoc_ ->>'Value') AS Value,
+		(esgquestion.jsondoc_ ->>'Year') AS Year,
+		esgquestion.wfid_::varchar,
+		esgquestion.taskid_::varchar,
+		esgquestion.versionid_::int4,
+		esgquestion.isdeleted_::boolean,
+		esgquestion.islatestversion_::boolean,
+		esgquestion.baseversionid_::int4,
+		esgquestion.contextuserid_::varchar,
+		esgquestion.isvisible_::boolean,
+		esgquestion.isvalid_::boolean,
+		esgquestion.snapshotid_::int4,
+		esgquestion.t_::varchar,
+		esgquestion.createdby_::varchar,
+		esgquestion.createddate_::timestamp,
+		esgquestion.updatedby_::varchar,
+		esgquestion.updateddate_::timestamp,
+		esgquestion.fkid_esgmaster,
+		esgquestion.fkid_esgassessment,
+		CASE WHEN esgquestion.updateddate_ > esgquestion.createddate_ THEN esgquestion.updatedby_ ELSE esgquestion.createdby_ END AS sourcepopulatedby_,
+		GREATEST(esgquestion.createddate_, esgquestion.updateddate_) AS sourcepopulateddate_
+		,current_setting('myvariables.popdate')::timestamp as populateddate_
+	FROM madata.esgquestion
+	 WHERE
+		GREATEST(esgquestion.updateddate_, esgquestion.createddate_) > (select COALESCE(max(asofdate), to_timestamp(0)) from olapts.refreshhistory where tablename = 'esgquestion')
+		AND GREATEST(esgquestion.updateddate_, esgquestion.createddate_)::timestamp <= current_setting('myvariables.popdate')::timestamp
+		AND esgquestion.t_ = 'EsgQuestion'
+	;
+raise notice '% - Step esgquestion - part a end', clock_timestamp();
+--------------------------------------------
+ELSE
+raise notice '% Step esgquestion - part b start', clock_timestamp();
+	DROP TABLE IF EXISTS olapts.esgquestion;
+	CREATE TABLE olapts.esgquestion AS
+	select   
+	esgquestion.id_ AS id_,
+		esgquestion.pkid_::varchar as pkid_,
+		(esgquestion.jsondoc_ ->>'Choice')::boolean AS Choice,
+		(esgquestion.jsondoc_ ->>'Comments') AS Comments,
+		(esgquestion.jsondoc_ ->>'EsgMasterId') AS EsgMasterId,
+		(esgquestion.jsondoc_ ->>'Factor') AS Factor,		
+		(esgquestion.jsondoc_ ->>'Pillar')::boolean AS Pillar,
+		(esgquestion.jsondoc_ ->>'QuestionDescr') AS QuestionDescr,
+		(esgquestion.jsondoc_ ->>'QuestionId') AS QuestionId,
+		(esgquestion.jsondoc_ ->>'QuestionnaireVersion') AS QuestionnaireVersion,
+		(esgquestion.jsondoc_ ->>'SubFactor') AS SubFactor,
+		(esgquestion.jsondoc_ ->>'Value') AS Value,
+		(esgquestion.jsondoc_ ->>'Year') AS Year,
+		esgquestion.wfid_::varchar,
+		esgquestion.taskid_::varchar,
+		esgquestion.versionid_::int4,
+		esgquestion.isdeleted_::boolean,
+		esgquestion.islatestversion_::boolean,
+		esgquestion.baseversionid_::int4,
+		esgquestion.contextuserid_::varchar,
+		esgquestion.isvisible_::boolean,
+		esgquestion.isvalid_::boolean,
+		esgquestion.snapshotid_::int4,
+		esgquestion.t_::varchar,
+		esgquestion.createdby_::varchar,
+		esgquestion.createddate_::timestamp,
+		esgquestion.updatedby_::varchar,
+		esgquestion.updateddate_::timestamp,
+		esgquestion.fkid_esgmaster,
+		esgquestion.fkid_esgassessment,		
+		CASE WHEN esgquestion.updateddate_ > esgquestion.createddate_ THEN esgquestion.updatedby_ ELSE esgquestion.createdby_ END AS sourcepopulatedby_,
+		GREATEST(esgquestion.createddate_, esgquestion.updateddate_) AS sourcepopulateddate_
+		,current_setting('myvariables.popdate')::timestamp as populateddate_
+	FROM madata.esgquestion
+	WHERE
+		GREATEST(esgquestion.updateddate_, esgquestion.createddate_) > (select COALESCE(max(asofdate), to_timestamp(0)) from olapts.refreshhistory where tablename = 'esgquestion')
+		AND GREATEST(esgquestion.updateddate_, esgquestion.createddate_)::timestamp <= current_setting('myvariables.popdate')::timestamp
+		AND esgquestion.t_ = 'EsgQuestion'
+	;
+raise notice '% - Step esgquestion - part b end', clock_timestamp();
+
+--EsgQuestion--
+raise notice '% - Step esgquestion_idx - part a start', clock_timestamp(); 
+DROP INDEX if exists olapts.esgquestion_idx;
+DROP INDEX if exists olapts.esgquestion_idx2;
+CREATE INDEX IF NOT EXISTS esgquestion_idx ON olapts.esgquestion (id_);
+CREATE INDEX IF NOT EXISTS esgquestion_idx2 ON olapts.esgquestion (pkid_,versionid_);
+REINDEX TABLE olapts.esgquestion;
+ANALYZE olapts.esgquestion ;	
+
+raise notice '% - Step esgquestion_idx - part a end', clock_timestamp(); 
+END IF;
+------------------------------------------------------------------------
+raise notice '% step esgquestion - part c start', clock_timestamp();
+DROP TABLE IF EXISTS olapts.esgquestionflag;
+CREATE TABLE  olapts.esgquestionflag AS
+
+select
+id_,
+pkid_,
+wfid_ wfid_,
+taskid_ taskid_, 
+versionid_ versionid_,
+isdeleted_ isdeleted_,
+islatestversion_ islatestversion_,
+baseversionid_ baseversionid_,
+contextuserid_ contextuserid_,
+isvisible_ isvisible_,
+isvalid_ isvalid_,
+snapshotid_ snapshotid_,
+t_ t_,
+createdby_ createdby_,
+createddate_ createddate_,
+updatedby_ updatedby_,
+updateddate_ updateddate_,
+(case when updateddate_>createddate_ then updatedby_ else createdby_ end) as sourcepopulatedby_,
+GREATEST(updateddate_, createddate_) as sourcepopulateddate_
+,current_setting('myvariables.popdate')::timestamp as populateddate_
+FROM madata.esgquestion
+where 
+GREATEST(esgquestion.updateddate_, esgquestion.createddate_)::timestamp <=current_setting('myvariables.popdate')::timestamp
+and esgquestion.t_ = 'EsgQuestion'
+;
+
+raise notice '% - Step esgquestionflag_idx - part a start', clock_timestamp(); 
+DROP INDEX if exists olapts.esgquestionflag_idx;
+DROP INDEX if exists olapts.esgquestionflag_idx2;
+CREATE INDEX IF NOT EXISTS esgquestionflag_idx ON olapts.esgquestionflag (id_);
+CREATE INDEX IF NOT EXISTS esgquestionflag_idx2 ON olapts.esgquestionflag (pkid_,versionid_);
+REINDEX TABLE olapts.esgquestionflag;
+ANALYZE olapts.esgquestionflag ;
+
+
+raise notice '% - Step esgquestionflag_idx - part a end', clock_timestamp(); 
+
+select COALESCE(max(asofdate),to_timestamp(0)) into varprevsuccessdate from olapts.refreshhistory where tablename = 'esgquestion';
+delete from olapts.refreshhistory where tablename = 'esgquestion';
+insert into olapts.refreshhistory(tablename,asofdate,prevsuccessdate) select 'esgquestion' tablename,current_setting('myvariables.popdate')::timestamp as  asofdate,varprevsuccessdate;
+
+select COALESCE(max(asofdate),to_timestamp(0)) into varprevsuccessdate from olapts.refreshhistory where tablename = 'esgquestionflag';
+delete from olapts.refreshhistory where tablename = 'esgquestionflag';
+insert into olapts.refreshhistory(tablename,asofdate,prevsuccessdate) select 'esgquestionflag' tablename,current_setting('myvariables.popdate')::timestamp as  asofdate,varprevsuccessdate;
+
+raise notice '% - Step esgquestion - part c end', clock_timestamp();
+
+END $$;
+
+
+--Check tables 
+--select * from olapts.esgquestion
+--select * from olapts.esgquestionflag
+--select * from olapts.refreshhistory
+
+
