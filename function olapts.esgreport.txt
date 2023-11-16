@@ -1,0 +1,175 @@
+-- FUNCTION: olapts.esgreport()
+-- DROP FUNCTION olapts.esgreport();
+
+CREATE OR REPLACE FUNCTION olapts.esgreport(IN ref_date date)
+    RETURNS boolean
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+declare
+ pl_status boolean:=FALSE;
+begin
+	
+	TRUNCATE TABLE olapts.esgreport; 
+	insert into olapts.esgreport (
+	select distinct on (UNQ_ASSES_ID,INV_PTY_RTG_OBLG_TAX_ID) *
+--into olapts.esgreport
+from (
+select 
+	RECORD_TYPE
+	,AS_OF_DT
+	,SRC_STM_CODE
+	,coalesce(UNQ_ASSES_ID,'')::char(40) UNQ_ASSES_ID
+	,coalesce(INV_PTY_RTG_ENT_ID,'')::char(10) INV_PTY_RTG_ENT_ID
+	,coalesce(case when gc18_new = '000000000' or gc18_new is null then cdicode_new else gc18_new end,'')::char(20) as INV_PTY_RTG_OBLG_TAX_ID --lpad(gc18_new,20,'0')
+	,coalesce(INV_PTY_RTG_OBLG_CDI_CODE,'')::char(10) INV_PTY_RTG_OBLG_CDI_CODE
+	,coalesce(INV_PTY_RTG_OBLG_NACE_CODE,'')::char(5) INV_PTY_RTG_OBLG_NACE_CODE
+	,coalesce(TO_CHAR(INV_PTY_RTG_ESG_EV_DT::date,'YYYYMMDD'),'00000101')::char(8) as INV_PTY_RTG_ESG_EV_DT
+	,coalesce(TO_CHAR(INV_PTY_RTG_ESG_STM_RTRVL_DT::date,'YYYYMMDD'),'00000101')::char(8) as INV_PTY_RTG_ESG_STM_RTRVL_DT  
+	,coalesce(TO_CHAR(INV_PTY_RTG_ESG_ASSES_DT::date,'YYYYMMDD'),'00000101')::char(8) as INV_PTY_RTG_ESG_ASSES_DT  
+	,coalesce(TO_CHAR(INV_PTY_APRV_RTG_APRV_DT::date,'YYYYMMDD'),'00000101')::char(8) as INV_PTY_APRV_RTG_APRV_DT  
+	,coalesce(TO_CHAR(INV_PTY_RTG_CR_CMTE_DT::date,'YYYYMMDD'),'00000101')::char(8) as INV_PTY_RTG_CR_CMTE_DT  
+	,coalesce(TO_CHAR(INV_PTY_RTG_NEXT_RVW_DT::date,'YYYYMMDD'),'00000101')::char(8) as INV_PTY_RTG_NEXT_RVW_DT  
+	,coalesce(INV_PTY_RTG_APRV_AHR_ID,'')::char(5) INV_PTY_RTG_APRV_AHR_ID
+	,coalesce(INV_PTY_RTG_ANL_NM,'')::char(50) INV_PTY_RTG_ANL_NM
+	,coalesce(INV_PTY_RTG_OVRD_RSN_TP_ID,'')::char(5) INV_PTY_RTG_OVRD_RSN_TP_ID
+	,coalesce(INV_PTY_RTG_APRV_NM,'')::char(50) INV_PTY_RTG_APRV_NM
+	,coalesce(INV_PTY_RTG_BSN_PRTF,'')::char(5) INV_PTY_RTG_BSN_PRTF
+	,coalesce(INV_PTY_RTG_OVRD_DRVR,'')::char(5) INV_PTY_RTG_OVRD_DRVR
+	,coalesce(INV_PTY_RTG_TP,'')::char(5) INV_PTY_RTG_TP
+	,coalesce(INV_PTY_RTG_ENVRNM_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_ENVRNM_SCOR----------------------------NIKAS
+	,coalesce(INV_PTY_RTG_ENVRNM_ZON,'')::char(5) INV_PTY_RTG_ENVRNM_ZON
+	,coalesce(INV_PTY_RTG_SCL_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_SCL_SCOR----------------------------NIKAS
+	,coalesce(INV_PTY_RTG_SCL_ZON,'')::char(5) INV_PTY_RTG_SCL_ZON
+	,coalesce(INV_PTY_RTG_GVRNC_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_GVRNC_SCOR----------------------------NIKAS
+	,coalesce(INV_PTY_RTG_GVRNC_ZON,'')::char(5) INV_PTY_RTG_GVRNC_ZON
+	,coalesce(INV_PTY_RTG_ESG_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_ESG_SCOR----------------------------NIKAS	
+	,coalesce(INV_PTY_RTG_ESG_ZON,'')::char(5) INV_PTY_RTG_ESG_ZON
+	,coalesce(INV_PTY_RTG_TP_SCTR,'')::char(100) INV_PTY_RTG_TP_SCTR
+	,coalesce(QUEST_ID,'')::char(50) QUEST_ID
+	,coalesce(QUEST_VRSN,'')::char(50) QUEST_VRSN
+    ,coalesce(OBLG_RGSTRN_NUM,'')::char(50) OBLG_RGSTRN_NUM
+	,coalesce(JRSCTN,'')::char(5) JRSCTN
+from (
+	  --select distinct on (assess.pkid_)  
+		select '2'::smallint AS RECORD_TYPE
+		,ref_date AS AS_OF_DT --parameter
+		,'SDP'::char(5) as SRC_STM_CODE
+		,assess.pkid_::char(40) as UNQ_ASSES_ID
+		,assess.entityid::char(10) as INV_PTY_RTG_ENT_ID
+		,entity.gc18::char(20) 
+		,case when entity.gc18 in ('999999999','777777777') or (entity.gc18 ~* '[a-z]')=true 
+				or (entity.gc18 ~* '[α-ω]')=true or (entity.gc18~*'[Α-Ω]')=true or (entity.gc18~*'[A-Z]')=true then '000000000'::char(20) else entity.gc18::char(20) end as gc18_new
+		,case when entity.cdicode in ('999999999','777777777') or (entity.cdicode ~* '[a-z]')=true or (entity.cdicode ~* '[α-ω]')=true or (entity.cdicode~*'[Α-Ω]')=true or (entity.cdicode~*'[A-Z]')=true 
+				then '000000000'::char(10) 
+				else entity.cdicode::char(10) 
+				end	as cdicode_new
+		,entity.cdicode::char(10) as INV_PTY_RTG_OBLG_CDI_CODE
+		--,entity.industrycode::char(5) as INV_PTY_RTG_OBLG_NACE_CODE
+        ,case when entity.industrycode in (select nace_lookup.key_ from olapts.nace_industry_lookup) then industrycode 
+	           when entity.industrycode not in (select nace_lookup.key_ from olapts.nace_industry_lookup) and industrycode <>'' then '-100' 
+	           else null	
+	     end as INV_PTY_RTG_OBLG_NACE_CODE	
+		,assess.questionnairedate as INV_PTY_RTG_ESG_EV_DT -- When the questionnaire was filled at Tiresias ESGR 
+		,assess.assessmentdate as INV_PTY_RTG_ESG_STM_RTRVL_DT --retrieveddate
+		,assess.assessmentdate as INV_PTY_RTG_ESG_ASSES_DT --scoringdate
+		,assess.approvaldate as INV_PTY_APRV_RTG_APRV_DT --approvaldate
+		,assess.creditcommitteedate as INV_PTY_RTG_CR_CMTE_DT --creditcommitteedate
+		,assess.nextreviewdate as INV_PTY_RTG_NEXT_RVW_DT --nextreviewdate
+		--,entity.creditcommittee::char(5) as INV_PTY_RTG_APRV_AHR_ID	
+        ,case when entity.creditcommittee in (select key_ from olapts.Credit_Committee_Lookup) then datamart_value 
+	           when entity.creditcommittee not in (select key_ from olapts.Credit_Committee_Lookup) and creditcommittee <>'' then '-100' 
+	           else null	
+	     end as INV_PTY_RTG_APRV_AHR_ID		
+		,assess.assessmentuser as INV_PTY_RTG_ANL_NM
+		,assess.overridereason as INV_PTY_RTG_OVRD_RSN_TP_ID
+		,approvaluser as INV_PTY_RTG_APRV_NM
+		--,entity.businessportfolio as INV_PTY_RTG_BSN_PRTF
+	    ,case when entity.businessportfolio in (select key_ from olapts.businessportolio_lookup) then businessportfolio 
+	           when entity.businessportfolio not in (select key_ from olapts.businessportolio_lookup) and businessportfolio <>'' then '-100' 
+	           else null	
+	     end as INV_PTY_RTG_BSN_PRTF	
+		,assess.overridedriver as INV_PTY_RTG_OVRD_DRVR
+		,case when assess.overridegrade is null then '01' --systemic 
+		      else '02' --override
+		 end as INV_PTY_RTG_TP --ratingtype --overriderating type 21 tou excel
+		,case when assess.esubscore::decimal(19,2) >0 then concat('+',assess.esubscore)
+	          when assess.esubscore::decimal(19,2) <0 then concat('-',assess.esubscore)
+	          else null
+         end as INV_PTY_RTG_ENVRNM_SCOR
+		--,assess.ezoneoutcome as INV_PTY_RTG_ENVRNM_ZON -----to be checked
+		,case when assess.ezoneoutcome = 'red'   then '01'
+	          when assess.ezoneoutcome = 'amber' then '02'
+	          when assess.ezoneoutcome = 'green' then '03'
+	          when assess.ezoneoutcome not in ('red','amber','green') and assess.ezoneoutcome is not null then '-100'
+	          else null
+         end as INV_PTY_RTG_ENVRNM_ZON
+		--,assess.ssubscore as INV_PTY_RTG_SCL_SCOR	
+		,case when assess.ssubscore::decimal(19,2) >0 then concat('+',assess.ssubscore)
+	          when assess.ssubscore::decimal(19,2) <0 then concat('-',assess.ssubscore)
+	          else null
+         end as INV_PTY_RTG_SCL_SCOR
+		--,assess.szoneoutcome as INV_PTY_RTG_SCL_ZON	
+		,case when assess.szoneoutcome = 'red'   then '01'
+	          when assess.szoneoutcome = 'amber' then '02'
+	          when assess.szoneoutcome = 'green' then '03'
+	          when assess.szoneoutcome not in ('red','amber','green') and assess.szoneoutcome is not null then '-100'
+	          else null
+         end as INV_PTY_RTG_SCL_ZON	
+		--,assess.gsubscore as INV_PTY_RTG_GVRNC_SCOR
+		,case when assess.gsubscore::decimal(19,2) >0 then concat('+',assess.gsubscore)
+	          when assess.gsubscore::decimal(19,2) <0 then concat('-',assess.gsubscore)
+	          else null
+         end as INV_PTY_RTG_GVRNC_SCOR	
+		--,assess.gzoneoutcome as INV_PTY_RTG_GVRNC_ZON
+		,case when assess.gzoneoutcome = 'red'   then '01'
+	          when assess.gzoneoutcome = 'amber' then '02'
+	          when assess.gzoneoutcome = 'green' then '03'
+	          when assess.gzoneoutcome not in ('red','amber','green') and assess.gzoneoutcome is not null then '-100'
+	          else null
+         end as INV_PTY_RTG_GVRNC_ZON		
+		--,assess.totalesgscore as INV_PTY_RTG_ESG_SCOR	
+		,case when assess.totalesgscore::decimal(19,2) >0 then concat('+',assess.totalesgscore)
+	          when assess.totalesgscore::decimal(19,2) <0 then concat('-',assess.totalesgscore)
+	          else null
+         end as INV_PTY_RTG_ESG_SCOR		
+		--,assess.esgzonesoutcome as INV_PTY_RTG_ESG_ZON
+		,case when assess.esgzonesoutcome = 'red'   then '01'
+	          when assess.esgzonesoutcome = 'amber' then '02'
+	          when assess.esgzonesoutcome = 'green' then '03'
+	          when assess.esgzonesoutcome not in ('red','amber','green') and assess.esgzonesoutcome is not null then '-100'
+	          else null
+         end as INV_PTY_RTG_ESG_ZON		
+		,case when assess.questionnairetype is not null and nace_lookup.value_ is not null and nace_lookup.Key_ is not null 
+	          then concat(assess.questionnairetype,'/',nace_lookup.value_,'',nace_lookup.Key_)
+	          else null
+	     end as INV_PTY_RTG_TP_SCTR
+		,assess.questionnaireid as QUEST_ID
+		,assess.questionnaireversion as QUEST_VRSN 
+		,entity.registrationnumber as OBLG_RGSTRN_NUM
+		,entity.jurisdiction as JRSCTN
+        from olapts.factesgassessment assess
+        left join olapts.factentity entity on assess.entityid::int = entity.entityid and assess.entityversionid::int = entity.versionid_
+        --left join olapts.factesgquestion question on assess.pkid_=question.fkid_esgmaster and assess.versionid_=question.versionid_ and question.islatestversion_
+        left join olapts.nace_industry_lookup nace_lookup on entity.industrycode = nace_lookup.Key_ 
+        left join olapts.Credit_Committee_Lookup creditcommitte_lookup on entity.creditcommittee = creditcommitte_lookup.key_ 
+        where assess.authorizationflag  --isapproved
+        	  --and assess.islatestversion_ 
+        	  and assess.expirationdate is null 
+        --order by assess.pkid_, assess.sourcepopulateddate_ desc
+       )x 
+)n
+order by UNQ_ASSES_ID,INV_PTY_RTG_OBLG_TAX_ID desc
+	);
+
+pl_status:=TRUE;
+RETURN pl_status;
+EXCEPTION 
+	WHEN OTHERS THEN	
+		Return pl_status;		
+end;
+$BODY$;
+
+ALTER FUNCTION olapts.esgreport(date)
+    OWNER TO uniesguser;
