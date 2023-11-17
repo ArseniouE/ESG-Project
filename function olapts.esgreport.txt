@@ -155,7 +155,7 @@ from (
         left join olapts.nace_industry_lookup nace_lookup on entity.industrycode = nace_lookup.Key_ 
         left join olapts.Credit_Committee_Lookup creditcommitte_lookup on entity.creditcommittee = creditcommitte_lookup.key_ 
         where assess.authorizationflag  --isapproved
-        	  --and assess.islatestversion_ 
+        	  and assess.islatestversion_ 
         	  and assess.expirationdate is null 
         --order by assess.pkid_, assess.sourcepopulateddate_ desc
        )x 
