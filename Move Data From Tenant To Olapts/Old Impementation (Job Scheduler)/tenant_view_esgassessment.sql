@@ -70,7 +70,8 @@ select
 		,(h.jsondoc_->>'QuestionnaireDate') as questionnairedate 
 		,(h.jsondoc_ ->> 'QuestionnaireId') AS questionnaireid 
 		,(h.jsondoc_ ->> 'QuestionnaireType') AS questionnairetype	
-		,(h.jsondoc_->>'QuestionnaireVersion') as questionnaireversion 
+		,(h.jsondoc_->>'QuestionnaireVersion') as questionnaireversion
+	        ,(h.jsondoc_->>'RatingFrom') AS ratingfrom
 		,(h.jsondoc_->>'RevenuesRecentValue') AS revenuesrecentvalue
 		,(h.jsondoc_ ->> 'ScomplianceScore') AS scompliancescore
 		,(h.jsondoc_ ->> 'ScustomerPrivacyScore') AS scustomerprivacyscore
