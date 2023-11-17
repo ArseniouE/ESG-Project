@@ -25,13 +25,13 @@ select
 	,coalesce(INV_PTY_RTG_BSN_PRTF,'')::char(5) INV_PTY_RTG_BSN_PRTF
 	,coalesce(INV_PTY_RTG_OVRD_DRVR,'')::char(5) INV_PTY_RTG_OVRD_DRVR
 	,coalesce(INV_PTY_RTG_TP,'')::char(5) INV_PTY_RTG_TP
-	,coalesce(INV_PTY_RTG_ENVRNM_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_ENVRNM_SCOR----------------------------NIKAS
+	,coalesce(INV_PTY_RTG_ENVRNM_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_ENVRNM_SCOR
 	,coalesce(INV_PTY_RTG_ENVRNM_ZON,'')::char(5) INV_PTY_RTG_ENVRNM_ZON
-	,coalesce(INV_PTY_RTG_SCL_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_SCL_SCOR----------------------------NIKAS
+	,coalesce(INV_PTY_RTG_SCL_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_SCL_SCOR
 	,coalesce(INV_PTY_RTG_SCL_ZON,'')::char(5) INV_PTY_RTG_SCL_ZON
-	,coalesce(INV_PTY_RTG_GVRNC_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_GVRNC_SCOR----------------------------NIKAS
+	,coalesce(INV_PTY_RTG_GVRNC_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_GVRNC_SCOR
 	,coalesce(INV_PTY_RTG_GVRNC_ZON,'')::char(5) INV_PTY_RTG_GVRNC_ZON
-	,coalesce(INV_PTY_RTG_ESG_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_ESG_SCOR----------------------------NIKAS	
+	,coalesce(INV_PTY_RTG_ESG_SCOR,'N0000000,00000000')::char(18) INV_PTY_RTG_ESG_SCOR	
 	,coalesce(INV_PTY_RTG_ESG_ZON,'')::char(5) INV_PTY_RTG_ESG_ZON
 	,coalesce(INV_PTY_RTG_TP_SCTR,'')::char(100) INV_PTY_RTG_TP_SCTR
 	,coalesce(QUEST_ID,'')::char(50) QUEST_ID
@@ -142,7 +142,7 @@ from (
         left join olapts.nace_industry_lookup nace_lookup on entity.industrycode = nace_lookup.Key_ 
         left join olapts.Credit_Committee_Lookup creditcommitte_lookup on entity.creditcommittee = creditcommitte_lookup.key_ 
         where assess.authorizationflag  --isapproved
-        	  --and assess.islatestversion_ 
+        	  and assess.islatestversion_ 
         	  and assess.expirationdate is null 
         --order by assess.pkid_, assess.sourcepopulateddate_ desc
        )x 
