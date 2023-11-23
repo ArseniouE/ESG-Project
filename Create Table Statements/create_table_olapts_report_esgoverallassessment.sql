@@ -14,7 +14,7 @@ CREATE TABLE olapts.report_esgoverallassessment
 	,assess.loanapplication --arithmos aitisis
 	,assess.loansubapplication --arithmos ipo aitisis
 	,assess.esgoveralloutcome
-    CONSTRAINT esgreport_pkey PRIMARY KEY ()
+    CONSTRAINT esgreport_pkey PRIMARY KEY (assess.entityid)
         USING INDEX TABLESPACE olap_data
 )
 WITH (
