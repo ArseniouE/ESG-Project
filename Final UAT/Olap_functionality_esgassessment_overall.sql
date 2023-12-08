@@ -1,6 +1,6 @@
 --------------------Drop existing tables/ rows --------------------
 
-drop table if exists madata.v_esgassessment;
+drop foreign table if exists madata.v_esgassessment;
 drop table if exists olapts.factesgassessment;
 delete from olapts.olap_etl_control where etlfunction_= 'olap_metadata' and sourcetable_ = ('v_esgassessment');
 
