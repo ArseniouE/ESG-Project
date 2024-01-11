@@ -177,7 +177,8 @@ from (
             ,coalesce(registrationnumber,'')::char(50) OBLG_RGSTRN_NUM
         	,coalesce(jurisdiction,'')::char(5) JRSCTN
 from latest_assessment
-where expirationdate is null
+where expirationdate is null 
+	or cast(expirationdate as date) = cast(ref_date as date) --edit 11/01/2024
 order by INV_PTY_RTG_OBLG_TAX_ID, INV_PTY_RTG_OBLG_CDI_CODE, sourcepopulateddate_assess desc
 )x
 order by case when INV_PTY_RTG_OBLG_TAX_ID != '000000000'  then INV_PTY_RTG_OBLG_TAX_ID else INV_PTY_RTG_OBLG_CDI_CODE end, INV_PTY_RTG_OBLG_TAX_ID, INV_PTY_RTG_OBLG_CDI_CODE
