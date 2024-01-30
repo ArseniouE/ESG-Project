@@ -1,7 +1,7 @@
 Run Scripts with ralph solution in ESG UAT 2024-01-30.
 
 
-
+--DEPLOYMENT PLAN
 Επισυνάπτονται τα scripts για σκοπούς ESG Reporting. Τα scripts θα χρειαστεί να εκτελεστούν στο UAT με την παρακάτω σειρά:
 
 Olap Database (! Προσοχή η εκτέλεση πρέπει να γίνει με Olap User)
