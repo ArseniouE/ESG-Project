@@ -1,5 +1,3 @@
-Production code Go live 09/01/2024. (ESG με παλιό τρόπο)
-
 Τα scripts θα χρειαστεί να εκτελεστούν στην παραγωγή με την παρακάτω σειρά:
 
 Tenant Database
